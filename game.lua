@@ -55,30 +55,25 @@ function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't ste
           useMap,key)
 end
 
-function test(x,y,radius,sides)
+function Makeplanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
 
-  angletemp = math.rad(360//sides)
-  angle = angletemp
+  local angletemp = math.rad(360//sides)
+  local angle = angletemp
 
-  lx = radius * math.cos(angletemp) + radius
-  ly = radius * math.sin(angletemp) + radius
-  rx = radius * math.cos(angletemp+angletemp) + radius
-  ry = radius * math.sin(angletemp+angletemp) + radius
+  local lx = radius * math.cos(angletemp) + radius
+  local ly = radius * math.sin(angletemp) + radius
+  local rx = radius * math.cos(angletemp+angletemp) + radius
+  local ry = radius * math.sin(angletemp+angletemp) + radius
 
-  
-  
+  --8,0 -> 16,8
 
   for e = 1,sides do
     local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle)
     local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle)
-
     local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle)
     local aay = y + radius + (rx-radius)*math.sin(angle)+(ry-radius)*math.cos(angle)
-
-
-    
     ttri(ax,ay,aax,aay,radius+x,radius+y,
-        16,0,  8,0, 16,8,
+      UVx+UVw,UVy,  UVx,UVy, UVx+UVw,UVy+UVh,
         0,00)
     angle = angle+angletemp
   end
@@ -89,7 +84,7 @@ t = 1
 circlex = 70
     circley = 70
     circleradius = 50
-    circlesides = 20
+    circlesides = 10
 function TIC()
     spr = 0
     vbank(0)
@@ -117,9 +112,8 @@ function TIC()
     
 
     
-
     --for x=1,6,1 do
-      test(circlex,circley,circleradius,circlesides)
+      Makeplanet(circlex,circley,circleradius,circlesides,8,0,8,32)
     --end
 
     if btn(0) then
@@ -178,9 +172,9 @@ end]]--
 
 -- <TILES>
 -- 000:5558855555888855555885555558855555588555555885555558855555588555
--- 001:4444444444444444a44aa44aa4aaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
--- 002:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
--- 003:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 001:4444444444444444a44aa44aa4aaa4aaaaaaaa2aa22aa2222222aa22aaa22a22
+-- 002:0000055500005555000222550002225500022259000222590222555b0222555b
+-- 003:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
 -- 004:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 005:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 006:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -194,9 +188,9 @@ end]]--
 -- 014:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 015:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 016:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 017:022225550222bbb80000bbee00000bee00000111000001110000311100003330
--- 018:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
--- 019:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 017:aa2a222222222222323332223233333333333333333331113311331133111111
+-- 018:022225550222bbb80000bbee00000bee00000111000001110000311100003330
+-- 019:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
 -- 020:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 021:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 022:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -210,7 +204,7 @@ end]]--
 -- 030:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 031:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 032:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 033:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 033:1113333311113333131133333111333333113331331133111111111111111111
 -- 034:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 035:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 036:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -226,7 +220,7 @@ end]]--
 -- 046:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 047:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 048:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 049:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 049:1113331111113111131111113111133133113331331133111111111111111111
 -- 050:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 051:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 052:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -242,8 +236,8 @@ end]]--
 -- 062:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 063:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 064:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 065:0000055500005555000222550002225500022259000222590222555b0222555b
--- 066:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
+-- 065:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 066:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 067:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 068:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 069:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -258,8 +252,8 @@ end]]--
 -- 078:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 079:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 080:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 081:022225550222bbb80000bbee00000bee00000111000001110000311100003330
--- 082:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
+-- 081:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 082:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 083:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 084:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 085:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
