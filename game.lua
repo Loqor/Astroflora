@@ -71,7 +71,58 @@ function getCirclesides(x,y,radius,sides)
   return coords
 end
 
+function GetCircle(x,y,radius,sides)
+  local thetastep = math.rad(360 // sides)
 
+  local sides = {}
+  for theta = -math.pi,math.pi,thetastep do
+    table.insert(sides, {radius * math.cos(theta) + x, radius * math.sin(theta) + y, theta})
+  end
+
+
+  for _,val in ipairs(sides) do
+    
+
+    px = val[1]
+    py = val[2]
+
+    if sides[_+1] then
+      ox = sides[_+1][1]
+      oy = sides[_+1][2]
+      angle = sides[_+1][3]
+    end
+    angle = val[3]
+    trace(px.." "..py.." "..radius.." "..angle)
+    local ax = radius + (px-radius)*math.cos(angle)-(py-radius)*math.sin(angle)
+    local ay = radius + (px-radius)*math.sin(angle)+(py-radius)*math.cos(angle) 
+
+    
+
+    local aax = radius + (ox-radius)*math.cos(angle)-(oy-radius)*math.sin(angle)
+    local aay = radius + (ox-radius)*math.sin(angle)+(oy-radius)*math.cos(angle) 
+
+    ttri(ax,ay,aax,aay,20,20,8,0,16,0,12,16,0,00)
+  end
+end
+
+
+function test(angle)
+    length = 20
+    
+    ax = 20 + (15-20)*math.cos(angle)-(10-20)*math.sin(angle)
+    ay = 20 + (15-20)*math.sin(angle)+(10-20)*math.cos(angle) 
+
+    aax = 20 + (25-20)*math.cos(angle)-(10-20)*math.sin(angle)
+    aay = 20 + (25-20)*math.sin(angle)+(10-20)*math.cos(angle) 
+    
+
+    aaax = 20
+    aaay = 20
+    
+    --pointtorotate = 20,20
+    pix(20,20,2)
+    ttri(ax,ay,aax,aay,20,20,8,0,16,0,12,16,0,00)
+end
 
 t = 1
 function TIC()
@@ -92,16 +143,43 @@ function TIC()
           0,              --  mapY
           2,              --  mapWidth
           2,              --  mapHeight
-          0,false)]]--
+          0,false)
 
+    --angle = math.rad(t % 360)
 
+    GetCircle(50,50,20,5)]]--
+
+    local angle = 0
+    length = 20
+    
+    ax = 20 + (15-20)*math.cos(angle)-(10-20)*math.sin(angle)
+    ay = 20 + (15-20)*math.sin(angle)+(10-20)*math.cos(angle) 
+
+    aax = 20 + (25-20)*math.cos(angle)-(10-20)*math.sin(angle)
+    aay = 20 + (25-20)*math.sin(angle)+(10-20)*math.cos(angle) 
+    
+
+    aaax = 20
+    aaay = 20
+    
+    --pointtorotate = 20,20
+    pix(20,20,2)
+    ttri(ax,ay,aax,aay,20,20,8,0,16,0,12,16,0,00)
 
     circlex = 70
     circley = 70
     circleradius = 23
     circlesides = 20
 
-    circ(circlex,circley,circleradius,2)
+    for x=1,6,1 do
+      test(math.rad(60*x))
+    end
+
+
+    
+    --this works but inefficient
+
+    --[[circ(circlex,circley,circleradius,2) 
     local tble = getCirclesides(circlex,circley,circleradius,circlesides)
     for _,val in ipairs(tble) do
       angle = math.atan2(val[2] - 70, val[1] - 70)
@@ -116,13 +194,12 @@ function TIC()
           1,              --  mapWidth
           1,              --  mapHeight
           0,false)
-    end
+    end]]--
 
     if key(44) then
       exit()
     end
 end
-
 
 
 
