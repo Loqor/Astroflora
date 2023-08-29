@@ -55,57 +55,6 @@ function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't ste
           useMap,key)
 end
 
-function getCirclesides(x,y,radius,sides)
-
-  local thetastep = math.rad(360 // sides)
-
-  local coords = {}
-  for theta = -math.pi,math.pi,thetastep do
-    local x = radius * math.cos(theta) + x
-    local y = radius * math.sin(theta) + y
-  
-    table.insert(coords,{x,y,theta})
-  end
-
-
-  return coords
-end
-
-function GetCircle(x,y,radius,sides)
-  local thetastep = math.rad(360 // sides)
-
-  local sides = {}
-  for theta = -math.pi,math.pi,thetastep do
-    table.insert(sides, {radius * math.cos(theta) + x, radius * math.sin(theta) + y, theta})
-  end
-
-
-  for _,val in ipairs(sides) do
-    
-
-    px = val[1]
-    py = val[2]
-
-    if sides[_+1] then
-      ox = sides[_+1][1]
-      oy = sides[_+1][2]
-      angle = sides[_+1][3]
-    end
-    angle = val[3]
-    trace(px.." "..py.." "..radius.." "..angle)
-    local ax = radius + (px-radius)*math.cos(angle)-(py-radius)*math.sin(angle)
-    local ay = radius + (px-radius)*math.sin(angle)+(py-radius)*math.cos(angle) 
-
-    
-
-    local aax = radius + (ox-radius)*math.cos(angle)-(oy-radius)*math.sin(angle)
-    local aay = radius + (ox-radius)*math.sin(angle)+(oy-radius)*math.cos(angle) 
-
-    ttri(ax,ay,aax,aay,20,20,8,0,16,0,12,16,0,00)
-  end
-end
-
-
 function test(x,y,radius,sides)
 
   angletemp = math.rad(360//sides)
@@ -180,8 +129,9 @@ function TIC()
     end
 
 
-    --this works but inefficient
 
+    --this works but inefficient
+    --use rspr for anything none circular
     --[[circ(circlex,circley,circleradius,2) 
     local tble = getCirclesides(circlex,circley,circleradius,circlesides)
     for _,val in ipairs(tble) do
