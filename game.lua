@@ -106,25 +106,41 @@ function GetCircle(x,y,radius,sides)
 end
 
 
-function test(angle)
-    length = 20
-    
-    ax = 20 + (15-20)*math.cos(angle)-(10-20)*math.sin(angle)
-    ay = 20 + (15-20)*math.sin(angle)+(10-20)*math.cos(angle) 
+function test(x,y,radius,sides)
 
-    aax = 20 + (25-20)*math.cos(angle)-(10-20)*math.sin(angle)
-    aay = 20 + (25-20)*math.sin(angle)+(10-20)*math.cos(angle) 
-    
+  angletemp = math.rad(360//sides)
+  angle = angletemp
 
-    aaax = 20
-    aaay = 20
+  lx = radius * math.cos(angletemp) + radius
+  ly = radius * math.sin(angletemp) + radius
+  rx = radius * math.cos(angletemp+angletemp) + radius
+  ry = radius * math.sin(angletemp+angletemp) + radius
+
+  
+  
+
+  for e = 1,sides do
+    local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle)
+    local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle)
+
+    local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle)
+    local aay = y + radius + (rx-radius)*math.sin(angle)+(ry-radius)*math.cos(angle)
+
+
     
-    --pointtorotate = 20,20
-    pix(20,20,2)
-    ttri(ax,ay,aax,aay,20,20,8,0,16,0,12,16,0,00)
+    ttri(ax,ay,aax,aay,radius+x,radius+y,
+        16,0,  8,0, 16,8,
+        0,00)
+    angle = angle+angletemp
+  end
+    
 end
 
 t = 1
+circlex = 70
+    circley = 70
+    circleradius = 50
+    circlesides = 20
 function TIC()
     spr = 0
     vbank(0)
@@ -149,34 +165,21 @@ function TIC()
 
     GetCircle(50,50,20,5)]]--
 
-    local angle = 0
-    length = 20
-    
-    ax = 20 + (15-20)*math.cos(angle)-(10-20)*math.sin(angle)
-    ay = 20 + (15-20)*math.sin(angle)+(10-20)*math.cos(angle) 
-
-    aax = 20 + (25-20)*math.cos(angle)-(10-20)*math.sin(angle)
-    aay = 20 + (25-20)*math.sin(angle)+(10-20)*math.cos(angle) 
     
 
-    aaax = 20
-    aaay = 20
     
-    --pointtorotate = 20,20
-    pix(20,20,2)
-    ttri(ax,ay,aax,aay,20,20,8,0,16,0,12,16,0,00)
 
-    circlex = 70
-    circley = 70
-    circleradius = 23
-    circlesides = 20
+    --for x=1,6,1 do
+      test(circlex,circley,circleradius,circlesides)
+    --end
 
-    for x=1,6,1 do
-      test(math.rad(60*x))
+    if btn(0) then
+      circley = circley-1
+    elseif btn(1) then
+      circley = circley+1
     end
 
 
-    
     --this works but inefficient
 
     --[[circ(circlex,circley,circleradius,2) 
@@ -225,7 +228,7 @@ end]]--
 
 -- <TILES>
 -- 000:5558855555888855555885555558855555588555555885555558855555588555
--- 001:aaaaaa44aaaa4444aaaaa444aaaaaa44aaaaaa44aaaa4444aaaaa444aaaaaa44
+-- 001:4444444444444444a44aa44aa4aaa4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 -- 002:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
 -- 003:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 004:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
