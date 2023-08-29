@@ -27,7 +27,7 @@ function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't ste
     local _sx = sv[p][1] * scalex 
 		local _sy = sv[p][2] * scaley
     -- apply rotation
-		local a = -angle
+		local a = angle
 		local rx = _sx * math.cos(a) - _sy * math.sin(a)
 		local ry = _sx * math.sin(a) + _sy * math.cos(a)
     -- apply transform
@@ -55,18 +55,35 @@ function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't ste
           useMap,key)
 end
 
+function getCirclesides(x,y,radius,sides)
+
+  local thetastep = math.rad(360 // sides)
+
+  local coords = {}
+  for theta = -math.pi,math.pi,thetastep do
+    local x = radius * math.cos(theta) + x
+    local y = radius * math.sin(theta) + y
+  
+    table.insert(coords,{x,y,theta})
+  end
+
+  return coords
+end
+
+
+
 t = 1
 function TIC()
     spr = 0
     vbank(0)
     cls(0)
     vbank(1)
-    cls(0)
+    cls(1)
     poke4(0x3FF8,0)
     --rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap)
     t=t+1
-    angle = t/20 %360
-    rspr( 50,
+    -- angle = t/20 %360
+    --[[rspr( 50,
           50,          --  x,y
           2,      --  scale
           angle,      --  angle
@@ -74,7 +91,33 @@ function TIC()
           0,              --  mapY
           2,              --  mapWidth
           2,              --  mapHeight
+          0,false)]]--
+
+
+
+    circlex = 70
+    circley = 70
+    circleradius = 23
+    circlesides = 20
+    local tble = getCirclesides(circlex,circley,circleradius,circlesides)
+    for _,val in ipairs(tble) do
+      angle = math.atan2(val[2] - 70, val[1] - 70)
+      pix(val[1],val[2],2)
+          rspr( 
+          val[1],
+          val[2],          --  x,y
+          1,      --  scale
+          angle,      --  angle
+          spr+1,  --  mapX
+          0,              --  mapY
+          1,              --  mapWidth
+          1,              --  mapHeight
           0,false)
+    end
+
+    if key(44) then
+      exit()
+    end
 end
 
 
@@ -101,8 +144,8 @@ end
 end]]--
 
 -- <TILES>
--- 000:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 001:0000055500005555000222550002225500022259000222590222555b0222555b
+-- 000:5558855555888855555885555558855555588555555885555558855555588555
+-- 001:aaaaaa44aaaa4444aaaaa444aaaaaa44aaaaaa44aaaa4444aaaaa444aaaaaa44
 -- 002:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
 -- 003:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 004:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -166,8 +209,8 @@ end]]--
 -- 062:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 063:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 064:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 065:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 066:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 065:0000055500005555000222550002225500022259000222590222555b0222555b
+-- 066:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
 -- 067:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 068:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 069:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -182,8 +225,8 @@ end]]--
 -- 078:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 079:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 080:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 081:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 082:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-- 081:022225550222bbb80000bbee00000bee00000111000001110000311100003330
+-- 082:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
 -- 083:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 084:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 085:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
