@@ -113,6 +113,7 @@ function TIC()
 
     
     --for x=1,6,1 do
+      ---xpos, ypos, radius, no sides, UV rect to draw
       Makeplanet(circlex,circley,circleradius,circlesides,8,0,8,32)
     --end
 
