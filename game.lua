@@ -67,6 +67,7 @@ function getCirclesides(x,y,radius,sides)
     table.insert(coords,{x,y,theta})
   end
 
+
   return coords
 end
 
@@ -99,6 +100,8 @@ function TIC()
     circley = 70
     circleradius = 23
     circlesides = 20
+
+    circ(circlex,circley,circleradius,2)
     local tble = getCirclesides(circlex,circley,circleradius,circlesides)
     for _,val in ipairs(tble) do
       angle = math.atan2(val[2] - 70, val[1] - 70)
@@ -108,8 +111,8 @@ function TIC()
           val[2],          --  x,y
           1,      --  scale
           angle,      --  angle
-          spr+1,  --  mapX
-          0,              --  mapY
+          spr,  --  mapX
+          18,              --  mapY
           1,              --  mapWidth
           1,              --  mapHeight
           0,false)
@@ -407,7 +410,7 @@ end]]--
 -- 001:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
 -- 016:022225550222bbb80000bbee00000bee00000111000001110000311100003330
 -- 017:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
--- 032:dd0d888ddddddddd4ddd88884448844824484444244444222a444a211a242a11
+-- 032:122244ddaa444ddd24444dd044488ddd244488d8aa4448d8122448d8112488dd
 -- 033:00dd88ddddd84ddd8d44d88d4844d8444448d844244884441444442412244232
 -- 048:122a223312211233112111231121331331223333331211333111133131133331
 -- 049:1121432111111331121131313333311311331111111333331111333311113333
