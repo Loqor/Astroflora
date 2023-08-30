@@ -144,9 +144,12 @@ function init()
   player = {
     x=116,
     y=64,
-    movespeed=0.5,
-    maxspeed = 2.5,
-    turnfactor = 2,
+    movespeed=0.2,
+    maxspeed = 5,
+    maxaccel = 1,
+    decelspeed = 0.98,
+    turnfactor = 0.5,
+
     angle = 0,
     velocity = 0,
     angularvelocity = 0,
@@ -181,8 +184,15 @@ function newvelocity()
   player.y = player.velocity*-math.sin(math.rad(player.angle)) +player.y
 
 
-  player.velocity = player.velocity /1.1
-  player.angularvelocity = player.angularvelocity / 1.1
+  player.velocity = player.velocity * player.decelspeed
+  player.angularvelocity = player.angularvelocity * 0.95
+
+  player.turnfactor = 0.5
+
+  player.turnfactor = math.abs((player.movespeed - 0.5) / (5 - 0.5)*3)
+  player.movespeed = math.abs((player.velocity - 0.5) / (5 - 0.5) / 6)
+  if player.movespeed > 5 then player.movespeed = 5 end
+  if player.turnfactor > 2 then player.turnfactor = 2 end
 end
 
 -- Described in TIC() function because hehe.
@@ -220,12 +230,12 @@ function flyShipAndMove()
 
   -- Press A or Left Arrow to move to the left. Crazy, I know.
   if btn(2) or key(01) then
-    player.angularvelocity = player.angularvelocity -1
+    player.angularvelocity = player.angularvelocity - player.turnfactor
   end
 
   -- Press D or Right Arrow to move to the right. Nuts, I'm aware.
   if btn(3) or key(04) then
-    player.angularvelocity = player.angularvelocity +1
+    player.angularvelocity = player.angularvelocity + player.turnfactor
   end
 
   -- Press W or Up Arrow to move to up/forward. Insane, I understand.
@@ -235,7 +245,7 @@ function flyShipAndMove()
 
   -- Press S or Bottom Arrow to move down/backward. Crikey, I gets it.
   if btn(1) or key(19) and player.velocity < player.maxspeed then
-    player.velocity = player.velocity + player.movespeed
+    player.velocity = player.velocity + 0.01
   end
 end
 
@@ -263,7 +273,7 @@ function draw()
   angle = 0
     rspr( player.y,
       player.x,          --  x,y
-      2,      --  scale
+      1,      --  scale
       math.rad(player.angle),      --  angle
       (sprix*2),  --  mapX
       spriy*2,              --  mapY
@@ -337,6 +347,8 @@ function TIC()
     print("x: "..player.x, 20, 32)
     print("y: "..player.y, 20, 40)
     print("angle: "..player.angle,20,48)
+    print("T factor: "..player.turnfactor,20,56)
+    print("Vel: "..player.movespeed,20,64)
 
     -- Exit the current game to console with "`"
     if key(44) then
