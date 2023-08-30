@@ -112,7 +112,7 @@ function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
     local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle)
     local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle)
     local aay = y + radius + (rx-radius)*math.sin(angle)+(ry-radius)*math.cos(angle)
-    table.insert(planet, {ax, ay, aax, aay, radius+x, radius+y, UVx+UVw, UVy, UVx, UVy, UVx+UVw, UVy+UVh}) -- Cheeky little table.insert() which is almost completely unnecessary.
+    table.insert(planet, {ax, ay, aax, aay, radius+x, radius+y, UVx+UVw, UVy, UVx, UVy, UVx+(UVw/2), UVy+UVh}) -- Cheeky little table.insert() which is almost completely unnecessary.
     angle = angle+angletemp
   end
   
