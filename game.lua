@@ -15,8 +15,7 @@
 -- Create general gameplay (hey I used a different word than make :D).
 -- [Comments started at: 0100 hours, US Central Time -=- Comments ended at: 0200 hours, US Central Time]
 
--- I don't like the generity of "t" as a variable, but honestly, whatever. It's lua. F**king love lua.
-t = 1
+
 
 --Circle stuff should be put in a list/table/some sort of organized space because I don't like it here.
 circlex = 70
@@ -28,9 +27,26 @@ circlesides = 12
 -- If I see more variables defined here constantly, I will personally beat your ass. Lookin' at you, Magic boy.
 function BOOT()
 
+  player = {
+    x=116,
+    y=64,
+    movespeed=0.2,
+    maxspeed = 5,
+    maxaccel = 1,
+    decelspeed = 0.98,
+    turnfactor = 0.5,
+
+    angle = 0,
+    velocity = 0,
+    angularvelocity = 0,
+  }
+
+  planetsprite = makePlanet(circlex,circley,circleradius,circlesides,8,0,8,32)
+
   -- Sets the default velocity values on BOOT() because yes and because I don't care about where it's set, I just want it set to 0 once.
-  p.vx = 0
-  p.vy = 0
+
+  t=0
+  cam={x=120,y=68}
 end
 
 
@@ -93,9 +109,11 @@ end
 --whatever the hell this weird 2D sliced up poor planet is.
 function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
 
+  --div angle by 360 to get sides, basic maths
   local angletemp = math.rad(360/sides)
   local angle = angletemp
 
+  --gets xy coordinates for the two outer verts. Its duplicated, hence the angle+angle bit. Again just transposes point based on radius to get distance
   local lx = radius * math.cos(angletemp) + radius
   local ly = radius * math.sin(angletemp) + radius
   local rx = radius * math.cos(angletemp+angletemp) + radius
@@ -106,68 +124,31 @@ function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
   --8,0 -> 16,8
 
   local planet = {} -- Stores the necessary ttri() values.
-
   for e = 1,sides do
-    local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle)
-    local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle)
+    local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle) --similar, but now corrects the distance left/right/up/down etc to correct point
+    local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle) --also adds offset of x and y
     local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle)
     local aay = y + radius + (rx-radius)*math.sin(angle)+(ry-radius)*math.cos(angle)
-    table.insert(planet, {ax, ay, aax, aay, radius+x, radius+y, UVx+UVw, UVy, UVx, UVy, UVx+(UVw/2), UVy+UVh}) -- Cheeky little table.insert() which is almost completely unnecessary.
+    radiusx = radius+x
+    radiusy = radius+y
+    --The UV directions are weird ok, but it works
+    table.insert(planet, {ax, ay, aax, aay, radiusx, radiusy, UVx+UVw, UVy, UVx, UVy, UVx+(UVw/2), UVy+UVh}) -- Cheeky little table.insert() which is almost completely unnecessary.
     angle = angle+angletemp
   end
   
-  for _,val in pairs(planet) do -- I still don't personally understand why _,val works, but honestly I'll just learn tomorrow, I gotta study.. (this comment was written 6 minutes after the philosophical question comment was).
-    ttri(table.unpack(val))
-   end
+  return planet,radius
+  
     
 end
 
 
 -- init() is goofy. End of story.
--- Honestly if we used functions to define certain entities instead of stupid lists, that would be.. probably not a good idea. Let's try the metatables first.
 function init()
-  -- Time :) again. *init* stupid? Ha, ha.. ha.
-  t=t+1
+  --use BOOT, any global variable should be defined in BOOT beforehand
+  --organisation pls
+  --t=t+1
 
-  -- p = player.
-  p={x=116,
-    y=64,
-    spr=258,
-    ax=0.3,
-    ay=0.3,
-    vx=0,
-    vy=0,
-    dx=0.8,
-    dy=0.8}
-
-
-  player = {
-    x=116,
-    y=64,
-    movespeed=0.2,
-    maxspeed = 5,
-    maxaccel = 1,
-    decelspeed = 0.98,
-    turnfactor = 0.5,
-
-    angle = 0,
-    velocity = 0,
-    angularvelocity = 0,
-  }
-
-  -- f = temporary fire behind ship. BUG: FIRE LAGS BEHIND SHIP AS IT SLOWS DOWN.
-  f={x=p.x,y=p.y + 16,sprf=290}
-
-  -- cam = camera, default set to middle of the screen. Will work on lerped and rotated player-following-camera tomorrow, I must study for philosophy exam. Speaking of,
-  --I have a philosophical question: if I'm awake at 1:30 AM and I have an exam I'm supposed to be studying for, do I study or keep doing this? (spoilers: I keep doing this).
-  cam={x=120,y=68}
-
-  -- rot = rotation for the sprite; I know I know, get off my ass. It's terrible, and I'll get to ttri() rotations along with the camera stuff mentioned before.
-  rot=0
-
-  -- speed = the speed variable MagicMan(?)'s previous game was missing because he was too lazy to actually add one, instead, opted to just constantly repeatedly type the same value
-  --over and over again for the same reason. Shaking my head. Is by default set to 4.5, but it will vary depending on what stuff we decide to do with it in the future.
-  speed=4.5
+  
 end
 
 
@@ -179,6 +160,10 @@ function newvelocity()
     player.angle = player.angle-360
   end
 
+  --calculates new position
+  --player uses an angle, direction movement system
+  --left right is controlled by angular velocity
+
   player.x = player.velocity*math.cos(math.rad(player.angle)) +player.x
 
   player.y = player.velocity*-math.sin(math.rad(player.angle)) +player.y
@@ -189,6 +174,8 @@ function newvelocity()
 
   player.turnfactor = 0.5
 
+  --WIP easing shit, needs to be changed if can make better
+  --no I won't explain :)
   player.turnfactor = math.abs((player.movespeed - 0.5) / (5 - 0.5)*3)
   player.movespeed = math.abs((player.velocity - 0.5) / (5 - 0.5) / 6)
   if player.movespeed > 5 then player.movespeed = 5 end
@@ -251,26 +238,50 @@ end
 
 -- Goofy ahh draw() function because sorting.
 function draw()
+
+
+    --moved to draw cus its nicer, draw = draw stuff.
+    vbank(0)
+    -- Set the border radius to the color value of the 13th color slot.
+    poke(0x3FF8, 13)
+    -- Clears the screen with the color value of the 4th color slot.
+    cls(4)
+    -- Set the vbank to 1 for the foreground; e.g., player, tiles, etc. and the like.
+    vbank(1)
+    -- Sets the mouse cursor to be the sprite in #4 of the sprite sheet.
+    poke(0x03FFB, 4)
+    -- Sets the transparency color for vbank(1).
+    poke(0x3FF8, 0)
+    -- Clears the screen with the color value of slot 0.
+    cls(0)
+
+
+
+
   -- I wanna sort everything that needs to be drawn into this function
   --because it just makes sorting easier, especially if there are bugs.
   --DO NOT add redundant calls, especially with different names. No functions like
   --function draw(sprite) <and then use sprite here like an idiot> end
-  --if we're gonna make it general like that, might as well just code this in Brainf**k.
+  --if we're gonna make it general like that, might as well just code this in Brainf**k.    
+  --no
+
 
   -- Calls the makePlanet() function to draw the *walkable* planet with ttri(). Idea: instead of constantly using this (although we totally could to do completely circular worlds), 
   --just set the map to whichever side you're on so it *looks* like you're going around the planet. Also, atmospheric effects will be necessary as well as parallax shifting.
+  for _,val in pairs(planetsprite) do -- I still don't personally understand why _,val works, but honestly I'll just learn tomorrow, I gotta study.. (this comment was written 6 minutes after the philosophical question comment was).
+    ttri(table.unpack(val))
+  end
+  -- _,val works becuase lua tables uses a key,value system, the pairs is to link them so it alternates through both at once. 
+  -- So _ = the key of the table (like 1,2,3,4,5 etc) and val = the actual info of the slot in that table
+  -- the name can be anything obviously
 
-  makePlanet(circlex,circley,circleradius,circlesides,8,0,8,32)
-
-
-  rspr(player.x,player.y,1,player.angle,
-      2,0,2,2,
-      00,1)
-
-
+  -- these need to be added to player, lazy smh
   sprix = 1
   spriy = 8
   angle = 0
+
+  --spirx, spriy 0-(idk can't do maths, however many cols) for row / column
+  --mapwidth / height for size to draw, so 1,1 is 1 sprite tile total
     rspr( player.y,
       player.x,          --  x,y
       1,      --  scale
@@ -281,29 +292,23 @@ function draw()
       2,              --  mapHeight
       0,false)
 
-      --rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap)
-
-  -- Draws the flames from behind the temporary ship
-  --spr(f.sprf,(f.x-8)-cam.x,(f.y-8)-cam.y, 0, 1, 0 , rot, 2, 2)
-
-  -- Draws the sprite for said temporary ship, is centered as well.
-  --spr(p.spr,(p.x-8)-cam.x,(p.y-8)-cam.y, 0, 1, 0 , rot, 2, 2)
 
   -- Draws the sprite for the mouse cursor.
   spr(4,gmouse().x,gmouse().y,0,1)
 end
 
-init() -- Honestly stuff breaks if I don't have this here.
+--init() -- Honestly stuff breaks if I don't have this here.
+--IT breaks because you're... defining a function that runs once on boot when their is already a BOOT() function, use it
 
 -- TIC-80 moment.
 function TIC()
 
     -- Time function.
-    t=t+1
+   
 
     -- Temporary camera stuff.
-    cam.x=120-p.x
-    cam.y=68-p.y
+    cam.x=120-player.x
+    cam.y=68-player.y
 
     -- Calls movement function, called flyShipAndMove() for now as that's what it's doing.
     flyShipAndMove()
@@ -317,26 +322,9 @@ function TIC()
     -- Adding onto this, the cls() was incorrectly set, and wasn't clearing the screen after vbank(1), instead, clearing it after vbank(0), making the screen the color of vbank(1)'s palette, 
     --which is undesirable. My fixes definitely are temporary as how it looks as of this moment is really strange, but I will organize in moments with comments :p.
 
-    -- Set the vbank to 0 for the background.
-    vbank(0)
 
-    -- Set the border radius to the color value of the 13th color slot.
-    poke(0x3FF8, 13)
 
-    -- Clears the screen with the color value of the 4th color slot.
-    cls(4)
 
-    -- Set the vbank to 1 for the foreground; e.g., player, tiles, etc. and the like.
-    vbank(1)
-
-    -- Sets the mouse cursor to be the sprite in #4 of the sprite sheet.
-    poke(0x03FFB, 4)
-
-    -- Sets the transparency color for vbank(1).
-    poke(0x3FF8, 0)
-
-    -- Clears the screen with the color value of slot 0.
-    cls(0)
 
     -- Calls the draw function I created, it's done in the foreground after the clear screen of vbank(1), as to divide from the functions and important memory stuff.
     draw()
@@ -354,6 +342,8 @@ function TIC()
     if key(44) then
       exit()
     end
+
+    t=t+1
 end
 
 -- Mouse function ripped directly from my old game (magic's old code that *doesn't* suck, haha).
