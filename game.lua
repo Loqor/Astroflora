@@ -17,8 +17,6 @@
 
 
 
---Circle stuff should be put in a list/table/some sort of organized space because I don't like it here.
-
 
 
 -- If I see more variables defined here constantly, I will personally beat your ass. Lookin' at you, Magic boy.
@@ -47,6 +45,41 @@ function BOOT()
 
   t=0
   cam={x=120,y=68}
+
+  background = {}
+  bgcolours = {
+    3,0,1
+  }
+
+  stars = {}
+
+  math.randomseed(tstamp())
+
+  for x=1,80 do
+    if background[x-1] and math.random(1,10) > 2 then
+      preval = background[x-1]
+      value = {math.random(
+        preval[1]-10,
+        preval[1]+10)*2,
+        
+        math.random(preval[2]-25,
+        preval[2]+25)*2,
+
+        math.random(5,30),
+        
+        bgcolours[math.random(1,3)]}
+    else
+      value = {math.random(0,120)*2,math.random(0,68)*2,math.random(10,40),
+      bgcolours[1]}
+    end
+
+    table.insert(background, value)
+  end
+
+  for x = 1,70 do
+    table.insert(stars, {math.random(1,120),math.random(1,68)})
+  end
+  starseed = math.random(1,100)
 end
 
 
@@ -244,17 +277,31 @@ function draw()
     poke(0x3FF8, 13)
     -- Clears the screen with the color value of the 4th color slot.
     cls(4)
+    
     -- Set the vbank to 1 for the foreground; e.g., player, tiles, etc. and the like.
     vbank(1)
+    
     -- Sets the mouse cursor to be the sprite in #4 of the sprite sheet.
     poke(0x03FFB, 4)
     -- Sets the transparency color for vbank(1).
     poke(0x3FF8, 0)
     -- Clears the screen with the color value of slot 0.
-    cls(0)
+    cls(00)
 
+    for _,val in pairs(background) do
+      circ(table.unpack(val))
+    end
+    for _,val in pairs(stars) do
+      local x = val[1] *2
+      local y = val[2] *2
 
-
+      if math.random(1,1000) > 1 then
+        line(x,y-1,x,y+1,5)
+        line(x-1,y,x+1,y,5)
+      else
+        pix(x,y,5)
+      end
+    end
 
   -- I wanna sort everything that needs to be drawn into this function
   --because it just makes sorting easier, especially if there are bugs.
@@ -351,6 +398,15 @@ function gmouse()
 	return m
 end
 
+
+
+
+
+
+
+
+
+
 -- I hate that this is here (the <TILES> and whatever's below it).
 
 -- <TILES>
@@ -380,6 +436,7 @@ end
 -- 001:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
 -- 002:000000050000005f0000002c0000002c0c000326060023230300232502522325
 -- 003:50000000f5000000c2000000c2000000623000c0323200605232003052322520
+-- 004:0666666060000006600000066000000660000006600000066000000606666660
 -- 016:022225550222bbb80000bbee00000bee00000111000001110000311100003330
 -- 017:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
 -- 018:05523322255231232522332002522300252220012552001f2033003c006c0003
