@@ -18,10 +18,7 @@
 
 
 --Circle stuff should be put in a list/table/some sort of organized space because I don't like it here.
-circlex = 70
-circley = 20
-circleradius = 50
-circlesides = 12
+
 
 
 -- If I see more variables defined here constantly, I will personally beat your ass. Lookin' at you, Magic boy.
@@ -41,9 +38,12 @@ function BOOT()
     angularvelocity = 0,
   }
 
-  planetsprite = makePlanet(circlex,circley,circleradius,circlesides,8,0,8,32)
 
-  -- Sets the default velocity values on BOOT() because yes and because I don't care about where it's set, I just want it set to 0 once.
+  circlex = 70
+  circley = 20
+  circleradius = 50
+  circlesides = 12
+  planetsprite = makePlanet(circlex,circley,circleradius,circlesides,8,0,8,32)
 
   t=0
   cam={x=120,y=68}
@@ -125,9 +125,9 @@ function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
 
   local planet = {} -- Stores the necessary ttri() values.
   for e = 1,sides do
-    local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle) --similar, but now corrects the distance left/right/up/down etc to correct point
+    local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle) --similar, but now corrects the offset left/right/up/down etc to correct point
     local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle) --also adds offset of x and y
-    local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle)
+    local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle) 
     local aay = y + radius + (rx-radius)*math.sin(angle)+(ry-radius)*math.cos(angle)
     radiusx = radius+x
     radiusy = radius+y
@@ -137,6 +137,7 @@ function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
   end
   
   return planet,radius
+  --radius is needed for stuff, planet is only ran on generation, they should need to be recalculated, so we can just return its vert data
   
     
 end
@@ -146,9 +147,6 @@ end
 function init()
   --use BOOT, any global variable should be defined in BOOT beforehand
   --organisation pls
-  --t=t+1
-
-  
 end
 
 
