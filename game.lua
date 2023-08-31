@@ -21,6 +21,8 @@ function BOOT()
 
   gamemenu = "mainmenu"
 
+  gravity  = 0.2
+
   screenlist = {
     "mainmenu",
     "space",
@@ -42,17 +44,26 @@ function BOOT()
   }
 
   player = {
-    x=32,
-    y=64,
+    x=0,
+    y=128 - 16,
+    w = 16,
+    h = 16,
     movespeed=0.2,
     maxspeed = 5,
     maxaccel = 1,
     decelspeed = 0.98,
-    flip = true,
+    flip = false,
 
-    angle = 0,
-    velocity = 0,
-    angularvelocity = 0,
+    dogravity = true,
+    vx = 0,
+    vy = 0,
+  }
+
+  block = {
+    x = 0,
+    y = 0,
+    w = 8,
+    h = 8,
   }
 
   circlex = 0
@@ -97,6 +108,10 @@ function BOOT()
     table.insert(stars, {math.random(1,120),math.random(1,68)})
   end
   starseed = math.random(1,100)
+end
+
+function solid(x,y)
+	return fget(mget((x//8) + ((maplist[maplist.current][1]-1)*30),(y)//8),0)
 end
 
 function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't steal this :(
@@ -236,23 +251,33 @@ function shipvelocity()
   if spaceship.turnfactor > 0.5 then spaceship.turnfactor = 0.5 end
 end
 
+function rectCollisions(spr, tile)
+  local is_colliding = false
+  if((spr.x+spr.w>=tile.x+tile.w) and (spr.x+spr.w<=tile.x+tile.w)) or ((spr.x-spr.w<=tile.x-tile.w) and (spr.x-spr.w>=tile.x-tile.w)) then
+    if((spr.y+spr.h>=tile.y+tile.h) and (spr.y+spr.w<=tile.y+tile.h)) or ((spr.y-spr.h<=tile.y-tile.h) and (spr.y-spr.h>=tile.y-tile.h)) then
+      is_colliding = true
+    end
+  end
+
+  return is_colliding
+
+end
+
 function playerVelocity()
 
-  if math.abs(player.velocity) > (player.decelspeed) then
-    if player.velocity < 0 then player.velocity = (player.decelspeed) else player.velocity = (player.decelspeed) end
+  if player.dogravity then
+    player.vy = player.vy+(gravity)
   end
 
-  player.x = player.velocity * math.cos(math.rad(player.angle)) + player.x
-  player.y = player.velocity * -math.sin(math.rad(player.angle)) + player.y
-  player.velocity = player.velocity * player.decelspeed
-  player.angularvelocity = player.angularvelocity * 0.925
-  player.movespeed = math.abs(player.velocity - 0.5) * 2
-  if player.movespeed > 0.05 then player.movespeed = 0.05 end
-  if player.velocity > 0 then
-    player.flip = false
-  else
-    player.flip = true
+  if math.abs(player.vy) > (4.5) then
+    if player.vy < 0 then player.vy = (-4.5) else player.vy = (4.5) end
   end
+
+  player.x = player.x + player.vx
+
+  player.vx = player.vx * 0.82
+  if math.abs(player.vx) < 0.05 then player.vx = 0 end
+  player.y = player.y + (player.vy)
 end
 
 function flyShipAndMove()
@@ -284,19 +309,17 @@ end
 function movePlayer()
 
   if btn(3) or key(04) then
-    player.velocity = player.velocity + player.movespeed
+    player.vx = player.vx + player.movespeed * 2
+    player.flip = false
   end
 
   if btn(2) or key(01) then
-    player.velocity = player.velocity - player.movespeed
+    player.vx = player.vx - player.movespeed * 2
+    player.flip = true
   end
 
-  if btn(0) or key(23) and player.velocity > -player.maxspeed then
-    player.angularvelocity = player.angularvelocity
-  end
-
-  if btn(1) or key(19) and player.velocity < player.maxspeed then
-    player.angularvelocity = player.angularvelocity
+  if btn(0) or key(23) then
+    player.vy = player.vy - player.y
   end
 end
 
@@ -626,6 +649,7 @@ end
 -- </SPRITES>
 
 -- <MAP>
+-- 015:000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 016:202020202020202020202020202020202020202020202020202020202020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- </MAP>
 
