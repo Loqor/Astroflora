@@ -4,7 +4,9 @@
 -- site:    https://loqor.github.io/ & https://magicman.github.io/
 -- license: Apache License 2.0
 -- version: 0.1
+version = "1.0"
 -- script:  lua
+-- menu: MAIN_MENU SPACE SETTINGS
 
 --##############################--TODO--##############################--
 -- ttri() for rotating the temporary ship/later on the player around planets/asteroids/astral bodies/ships.
@@ -15,16 +17,19 @@
 -- Create general gameplay (hey I used a different word than make :D).
 -- [Comments started at: 0100 hours, US Central Time -=- Comments ended at: 0200 hours, US Central Time]
 
-
-
-
-
--- If I see more variables defined here constantly, I will personally beat your ass. Lookin' at you, Magic boy.
 function BOOT()
 
-  player = {
-    x=116,
-    y=64,
+  gamemenu = "mainmenu"
+
+  screenlist = {
+    "mainmenu",
+    "space",
+    "first-level"
+  }
+
+  spaceship = {
+    x=68,
+    y=120,
     movespeed=0.2,
     maxspeed = 5,
     maxaccel = 1,
@@ -36,19 +41,31 @@ function BOOT()
     angularvelocity = 0,
   }
 
+  player = {
+    x=32,
+    y=64,
+    movespeed=0.2,
+    maxspeed = 5,
+    maxaccel = 1,
+    decelspeed = 0.98,
+    flip = true,
 
-  circlex = 70
-  circley = 20
+    angle = 0,
+    velocity = 0,
+    angularvelocity = 0,
+  }
+
+  circlex = 0
+  circley = 0
   circleradius = 50
-  circlesides = 12
-  planetsprite = makePlanet(circlex,circley,circleradius,circlesides,8,0,8,32)
+  circlesides = 15
 
   t=0
-  cam={x=120,y=68}
+  cam={x=120,y=68,rx=68,ry=120}
 
   background = {}
   bgcolours = {
-    3,0,1
+    1,2,0
   }
 
   stars = {}
@@ -82,18 +99,14 @@ function BOOT()
   starseed = math.random(1,100)
 end
 
-
-
-
--- L function used for drawing and rotation, also unused for some reason :)))))))) :insert clown emoji here:.
 function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't steal this :(
 
   --  this is fixed , to make a textured quad
   --  X , Y , U , V
   local sv ={{-1,-1, 0,0},
-             { 1,-1, 0.999,0},
-             {-1,1,  0,0.999},
-             { 1,1,  0.999,0.999}}
+             { 1,-1, 1,0},
+             {-1,1,  0,1},
+             { 1,1,  1,1}}
 
 	local rp = {} --  rotated points storage
 
@@ -135,11 +148,8 @@ function rspr(sx,sy,scale,angle,mx,my,mw,mh,key,useMap) --I promise I didn't ste
           useMap,key)
 end
 
--- But why? Why would you do that? Why would you do any of that? - JonTron | originally called Makeplanet(), bro (MagicMan(?)) was not playing with a full deck of cards.
--- This function for some reason draws a planet with multiple sprites in a line, AKA, a rectangle is conformed to the size of a triangle and put together with other triangles like a slice of pie
---to make it look like a circle. The radius, if defined with pretty much any value other than like a few ones that I found, will leave a large gap in the slices of the pie, which in this case
---is Galactus' grandma's favorite BULLSH*T PIE. We need sprite planets as well, or they can be generated with code, I don't care, I just want planets looking like spherical planets and not
---whatever the hell this weird 2D sliced up poor planet is.
+
+-- Makes a planet that would be walkable, not fly-to-able.
 function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
 
   --div angle by 360 to get sides, basic maths
@@ -151,7 +161,6 @@ function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
   local ly = radius * math.sin(angletemp) + radius
   local rx = radius * math.cos(angletemp+angletemp) + radius
   local ry = radius * math.sin(angletemp+angletemp) + radius
-
 
   --...What? Bro is not cooking.
   --8,0 -> 16,8
@@ -170,77 +179,82 @@ function makePlanet(x,y,radius,sides,UVx,UVy,UVw,UVh)
   end
   
   return planet,radius
-  --radius is needed for stuff, planet is only ran on generation, they should need to be recalculated, so we can just return its vert data
+  --radius is needed for stuff, planet is only ran on generation, they should need to be recalculated, so we can just return its vert data - nuh uh i fixed it also i made new method for a flower :)
   
     
 end
 
-
--- init() is goofy. End of story.
-function init()
-  --use BOOT, any global variable should be defined in BOOT beforehand
-  --organisation pls
+function makeFlower(x,y,radius,sides,UVx,UVy,UVw,UVh)
+  local angletemp = math.rad(360/sides)
+  local angle = angletemp
+  local lx = radius * math.cos(angletemp) + radius
+  local ly = radius * math.sin(angletemp) + radius
+  local rx = radius * math.cos(angletemp+angletemp) + radius
+  local ry = radius * math.sin(angletemp+angletemp) + radius
+  local flower = {}
+  for e = 1,sides do
+    local ax = x + radius + (lx-radius)*math.cos(angle)-(ly-radius)*math.sin(angle)
+    local ay = y + radius + (lx-radius)*math.sin(angle)+(ly-radius)*math.cos(angle)
+    local aax = x + radius + (rx-radius)*math.cos(angle)-(ry-radius)*math.sin(angle) 
+    local aay = y + radius + (rx-radius)*math.sin(angle)+(ry-radius)*math.cos(angle)
+    radiusx = radius+x
+    radiusy = radius+y
+    table.insert(flower, {ax, ay, aax, aay, radiusx, radiusy, UVx+UVw, UVy, UVx, UVy, UVx+(UVw/2), UVy+UVh})
+    angle = angle+angletemp
+  end
+  return flower,radius
 end
 
-
-function newvelocity()
+function shipvelocity()
   
 
-  player.angle = player.angle + player.angularvelocity
-  if player.angle > 360 then
-    player.angle = player.angle-360
+  spaceship.angle = spaceship.angle + spaceship.angularvelocity
+  if spaceship.angle > 360 then
+    spaceship.angle = spaceship.angle-360
+  elseif spaceship.angle < -360 then
+    spaceship.angle = spaceship.angle+360
   end
 
   --calculates new position
-  --player uses an angle, direction movement system
+  --spaceship uses an angle, direction movement system
   --left right is controlled by angular velocity
 
-  player.x = player.velocity*math.cos(math.rad(player.angle)) +player.x
+  spaceship.x = spaceship.velocity*math.cos(math.rad(spaceship.angle)) + spaceship.x
 
-  player.y = player.velocity*-math.sin(math.rad(player.angle)) +player.y
+  spaceship.y = spaceship.velocity*-math.sin(math.rad(spaceship.angle)) + spaceship.y
 
+  spaceship.velocity = spaceship.velocity * spaceship.decelspeed
+  spaceship.angularvelocity = spaceship.angularvelocity * 0.925
 
-  player.velocity = player.velocity * player.decelspeed
-  player.angularvelocity = player.angularvelocity * 0.95
-
-  player.turnfactor = 0.5
+  spaceship.turnfactor = 0.5
 
   --WIP easing shit, needs to be changed if can make better
   --no I won't explain :)
-  player.turnfactor = math.abs((player.movespeed - 0.5) / (5 - 0.5)*3)
-  player.movespeed = math.abs((player.velocity - 0.5) / (5 - 0.5) / 6)
-  if player.movespeed > 5 then player.movespeed = 5 end
-  if player.turnfactor > 2 then player.turnfactor = 2 end
+  spaceship.turnfactor = math.abs((spaceship.movespeed - 0.5) / (5 - 0.5)*3)
+  spaceship.movespeed = math.abs((spaceship.velocity - 0.5) / (5 - 0.5) / 6)
+  if spaceship.movespeed > 0.05 then spaceship.movespeed = 0.05 end
+  if spaceship.turnfactor > 0.5 then spaceship.turnfactor = 0.5 end
 end
 
--- Described in TIC() function because hehe.
-function velocity()
+function playerVelocity()
 
-  -- Leaving this here so I can implement gravity for the character later.
+  if math.abs(player.velocity) > (player.decelspeed) then
+    if player.velocity < 0 then player.velocity = (player.decelspeed) else player.velocity = (player.decelspeed) end
+  end
 
-  --if math.abs(p.vy) > (speed) then
-  --  if p.vy < 0 then p.vy = (speed) else p.vy = (speed) end
-  --end
-
-  -- Basic code that was mimicked from the velocity function in my old game (magic's old code which is kinda bad but it's okay for now).
-
-
-
-
-  -- I'm not.. particularly sure why we're putting the velocity values in parenthesis, but hey, I don't really care, it's just parenthesis.
-  p.x = p.x + (p.vx) -- Temporary ship's x position = Temporary ship's x position PLUS (parenthesis for some reason) Temporary ship's velocity in the x direction.
-  p.y = p.y + (p.vy) -- Temporary ship's y position = Temporary ship's y position PLUS (parenthesis for some reason) Temporary ship's velocity in the y direction.
-
-  p.vx= p.vx*p.dx -- Temporary ship's velocity in the x direction = Temporary ship's velocity in the x direction TIMES Temporary ship's deccelaration in the x direction.
-  p.vy = p.vy*p.dy -- Temporary ship's velocity in the y direction = Temporary ship's velocity in the y direction TIMES Temporary ship's deccelaration in the y direction.
-  if math.abs(p.vx) < (0.05) then p.vx = 0 end -- If the absolute value of the temporary ship's velocity in the x direction IS LESS THAN 
-  --(parenthesis for some reason) 0.05 then temporary ship's velocity in the x direction = 0.
-  if math.abs(p.vy) < (0.05) then p.vy = 0 end -- If the absolute value of the temporary ship's velocity in the y direction IS LESS THAN 
-  --(parenthesis for some reason) 0.05 then temporary ship's velocity in the y direction = 0.
+  player.x = player.velocity * math.cos(math.rad(player.angle)) + player.x
+  player.y = player.velocity * -math.sin(math.rad(player.angle)) + player.y
+  player.velocity = player.velocity * player.decelspeed
+  player.angularvelocity = player.angularvelocity * 0.925
+  player.movespeed = math.abs(player.velocity - 0.5) * 2
+  if player.movespeed > 0.05 then player.movespeed = 0.05 end
+  if player.velocity > 0 then
+    player.flip = false
+  else
+    player.flip = true
+  end
 end
 
-
--- Goofy ahh movement script, described in the TIC() function because, ofc, hehe.
 function flyShipAndMove()
 
   -- This is pretty much just basic movement code for a ship with accel and deccel. Can be applied to other
@@ -248,140 +262,245 @@ function flyShipAndMove()
 
   -- Press A or Left Arrow to move to the left. Crazy, I know.
   if btn(2) or key(01) then
-    player.angularvelocity = player.angularvelocity - player.turnfactor
+    spaceship.angularvelocity = spaceship.angularvelocity - spaceship.turnfactor
   end
 
   -- Press D or Right Arrow to move to the right. Nuts, I'm aware.
   if btn(3) or key(04) then
-    player.angularvelocity = player.angularvelocity + player.turnfactor
+    spaceship.angularvelocity = spaceship.angularvelocity + spaceship.turnfactor
   end
 
   -- Press W or Up Arrow to move to up/forward. Insane, I understand.
-  if btn(0) or key(23) and player.velocity > -player.maxspeed then
-    player.velocity = player.velocity - player.movespeed
+  if btn(0) or key(23) and spaceship.velocity > -spaceship.maxspeed then
+    spaceship.velocity = spaceship.velocity - spaceship.movespeed
   end
 
   -- Press S or Bottom Arrow to move down/backward. Crikey, I gets it.
-  if btn(1) or key(19) and player.velocity < player.maxspeed then
-    player.velocity = player.velocity + 0.01
+  if btn(1) or key(19) and spaceship.velocity < spaceship.maxspeed then
+    spaceship.velocity = spaceship.velocity + 0.01
   end
 end
 
--- Goofy ahh draw() function because sorting.
-function draw()
+function movePlayer()
 
+  if btn(3) or key(04) then
+    player.velocity = player.velocity + player.movespeed
+  end
 
-    --moved to draw cus its nicer, draw = draw stuff.
-    vbank(0)
-    -- Set the border radius to the color value of the 13th color slot.
-    poke(0x3FF8, 13)
-    -- Clears the screen with the color value of the 4th color slot.
-    cls(4)
-    
-    -- Set the vbank to 1 for the foreground; e.g., player, tiles, etc. and the like.
-    vbank(1)
-    
-    -- Sets the mouse cursor to be the sprite in #4 of the sprite sheet.
-    poke(0x03FFB, 4)
-    -- Sets the transparency color for vbank(1).
-    poke(0x3FF8, 0)
-    -- Clears the screen with the color value of slot 0.
-    cls(00)
+  if btn(2) or key(01) then
+    player.velocity = player.velocity - player.movespeed
+  end
 
-    for _,val in pairs(background) do
-      circ(table.unpack(val))
-    end
-    for _,val in pairs(stars) do
-      local x = val[1] *2
-      local y = val[2] *2
+  if btn(0) or key(23) and player.velocity > -player.maxspeed then
+    player.angularvelocity = player.angularvelocity
+  end
 
-      if math.random(1,1000) > 1 then
-        line(x,y-1,x,y+1,5)
-        line(x-1,y,x+1,y,5)
-      else
-        pix(x,y,5)
-      end
-    end
+  if btn(1) or key(19) and player.velocity < player.maxspeed then
+    player.angularvelocity = player.angularvelocity
+  end
+end
 
-  -- I wanna sort everything that needs to be drawn into this function
-  --because it just makes sorting easier, especially if there are bugs.
-  --DO NOT add redundant calls, especially with different names. No functions like
-  --function draw(sprite) <and then use sprite here like an idiot> end
-  --if we're gonna make it general like that, might as well just code this in Brainf**k.    
-  --no
+--Very cool function for drawing the planet with modifiable radius and position ;)
+function planetSprite()
+  local plnt = {}
+    plnt.planet, plnt.radius = makePlanet(circlex+cam.ry,circley+cam.rx,circleradius,circlesides,8,0,8,32)
+  return plnt
+end
 
+function lerp(a,b,t) 
+  return (1-t)*a + t*b 
+end
 
-  -- Calls the makePlanet() function to draw the *walkable* planet with ttri(). Idea: instead of constantly using this (although we totally could to do completely circular worlds), 
-  --just set the map to whichever side you're on so it *looks* like you're going around the planet. Also, atmospheric effects will be necessary as well as parallax shifting.
-  for _,val in pairs(planetsprite) do -- I still don't personally understand why _,val works, but honestly I'll just learn tomorrow, I gotta study.. (this comment was written 6 minutes after the philosophical question comment was).
+function drawMainMenu()
+  vbank(0)
+  poke(0x3FC0, 1)
+  cls(0)
+
+  rspr(220,50,1,math.rad(45),2,16,2,2,0,false)
+  rspr(208,62,1,math.rad(45),2,18,2,2,0,false)
+  
+  for _,val in pairs(planetSprite().planet) do
     ttri(table.unpack(val))
   end
-  -- _,val works becuase lua tables uses a key,value system, the pairs is to link them so it alternates through both at once. 
-  -- So _ = the key of the table (like 1,2,3,4,5 etc) and val = the actual info of the slot in that table
-  -- the name can be anything obviously
 
-  -- these need to be added to player, lazy smh
+  for i=t%8,360,8 do
+    line(i,136,150,135-i,15)
+    t=t+0.01
+  end
+
+  tx = 0
+  ty = 0
+
+  flwrx = tx + 6
+  flwry = ty - 8
+
+  flower = makeFlower(flwrx, flwry, 32, 5, 0, 160, 8, 8)
+
+  for _,val in pairs(flower) do 
+    ttri(table.unpack(val))
+  end
+
+  vbank(1)
+  cls(0)
+  
+  if Button(tx + 4, ty + 58, "NEW GAME", 8) and gmouse().left then
+    gamemenu = "spaceship"
+  end
+
+  if Button(tx + 4, ty + 72, "[TEMP] SPACE GAME", 8) and gmouse().left then
+    gamemenu = "space"
+  end
+
+  if Button(tx + 4, ty + 90, "EXIT", 12) and gmouse().left then
+    gamemenu = "exit"
+  end
+
+  --Flower and mid part
+  spr(321, flwrx + 24, flwry + 24, 0, 2, 0, 0)
+  spr(336, tx, ty, 0, 2, 0, 0, 2, 2)
+  spr(338, tx + 32, ty, 0, 2, 0, 0, 2, 2)
+  spr(340, tx + 64, ty, 0, 2, 0, 0, 2, 2)
+
+  --Surrounds and text like NEW GAME and EXIT because yes temporary ofc.
+  spr(308, tx, ty + 57, 0, 1, 0, 0)
+  print("NEW GAME", tx + 4, ty + 58, 15)
+  spr(309, tx + 45, ty + 57, 0, 1, 0, 0)
+  spr(292, tx, ty + 71, 0, 1, 0, 0)
+  print("[TEMP] SPACE GAME", tx + 4, ty + 72, 8)
+  spr(293, tx + 90, ty + 71, 0, 1, 0, 0)
+  spr(323, tx, ty + 89, 0, 1, 0, 0)
+  print("EXIT", tx + 4, ty + 90, 3)
+  spr(324, tx + 21, ty + 89, 0, 1, 0, 0)
+
+  print("Version: " ..version, 0, 124, 6, 0, 1, true)
+  print("Astroflora (C) 2023, Loqor & MagicMan(?).", 0, 130, 6, 0, 1, true)
+end
+
+function Button(bx,by,text,colour)
+	bh = 6
+	bw = string.len(text)*5 + string.len(text)
+	aw=1
+	ah=1
+	ax = gmouse().x
+	ay = gmouse().y
+
+	local output = ax<bx+bw and bx<ax+aw and ay<by+bh and by<ay+ah
+
+	if output then
+		spr(274,bx-6,by-2,00,1,1)
+		spr(275,bx+bw-6,by-2,00,1,0)
+		drawtextoutline(text,bx,by,9)
+	end
+	print(text,bx,by,colour)
+	
+	return output
+end
+
+function drawtextoutline(text,x,y,colour)
+	print(text,x-1,y,colour)
+	print(text,x+1,y,colour)
+	print(text,x,y+1,colour)
+	print(text,x,y-1,colour)
+end
+
+function drawSpace()
+
+  vbank(0)
+  poke(0x3FF8, 13)
+  poke(0x3FFB, 4)
+  poke(0x3FC0, 20)
+  poke(0x3FC1, 15)
+  poke(0x3FC2, 20)
+  poke(0x3FC3, 20)
+  poke(0x3FC4, 20)
+  poke(0x3FC5, 30)
+  poke(0x3FC6, 30)
+  poke(0x3FC7, 25)
+  poke(0x3FC8, 40)
+  cls(0)
+  spr(36, 114 + cam.ry, 120 + cam.rx, 0, 4, 0, 0, 2, 2)
+  for _,val in pairs(background) do
+    circ(table.unpack(val))
+  end
+  
+  for _,val in pairs(stars) do
+    local x = val[1] *2
+    local y = val[2] *2
+    if math.random(1,1000) > 1 then
+      line(x,y-1,x,y+1,6)
+      line(x-1,y,x+1,y,6)
+    else
+      pix(x,y,6)
+    end
+  end
+  vbank(1)
+  poke(0x3FFB, 4)
+  cls(0)
+
+  --if circlex > 0 or circlex <= 240 or circley > 0 or circley <= 136 then
+  --    for _,val in pairs(planetSprite().planet) do 
+  --      ttri(table.unpack(val))
+  --  end
+  --end
+    
+  spr(34, 114 + cam.ry, 120 + cam.rx, 0, 4, 0, 0, 2, 2)
+
   sprix = 1
   spriy = 8
   angle = 0
 
-  --spirx, spriy 0-(idk can't do maths, however many cols) for row / column
-  --mapwidth / height for size to draw, so 1,1 is 1 sprite tile total
-    rspr( player.y,
-      player.x,          --  x,y
-      1,      --  scale
-      math.rad(player.angle),      --  angle
-      (sprix*2),  --  mapX
-      spriy*2,              --  mapY
-      2,              --  mapWidth
-      2,              --  mapHeight
-      0,false)
+  rspr( spaceship.y+cam.ry,spaceship.x+cam.rx,1,math.rad(spaceship.angle),(sprix*2),spriy*2,2,2,0,false)
 
 
   -- Draws the sprite for the mouse cursor.
   spr(4,gmouse().x,gmouse().y,0,1)
 end
 
---init() -- Honestly stuff breaks if I don't have this here.
---IT breaks because you're... defining a function that runs once on boot when their is already a BOOT() function, use it
+function cameraMovement()
+  cam.rx = lerp(cam.rx,68-spaceship.x,0.05)
+  cam.ry = lerp(cam.ry,120-spaceship.y,0.05)
+end
 
--- TIC-80 moment.
 function TIC()
-
-    -- Time function.
-   
-
-    -- Temporary camera stuff.
-    cam.x=120-player.x
-    cam.y=68-player.y
-
-    -- Calls movement function, called flyShipAndMove() for now as that's what it's doing.
+  if gamemenu == "mainmenu" then
+    drawMainMenu()
+  elseif gamemenu == "space" then
     flyShipAndMove()
+    shipvelocity()
+    cameraMovement()
+    drawSpace()
+    
+    --print(p.x, 32, 32, 6)
+    --print(p.y, 32, 40, 6)
+    print("x: "..spaceship.x, 4, 4, 6)
+    print("y: "..spaceship.y, 4, 12, 6)
+    print("angle: "..spaceship.angle,4,20, 6)
+    print("T factor: "..spaceship.turnfactor,4,28, 6)
+    print("Vel: "..spaceship.movespeed,4,36, 6)
+  elseif gamemenu == "exit" then
+    exit()
+  elseif gamemenu == "spaceship" then
+    vbank(0)
+    cls(0)
+    vbank(1)
+    cls(0)
+    vbank(0)
+    poke(0x3FC0, 156)
+    poke(0x3FC1, 156)
+    poke(0x3FC2, 156)
+    poke(0x3FF8, 1)
+    poke(0x3FFB, 0)
+    map(0,0,30,17)
 
-    -- Refer to velocity() function comments.
-    newvelocity()
+    movePlayer()
+    playerVelocity()
 
-    -- There were a lot of issues getting this shit to work properly, for instance, when I fixed it, the poke was the wrong
-    --type of poke; e.g., "poke4(0x03FF8, 0)" when it should just be poke(). Plus, it was placed *after* the vbank(1) selection call,
-    --therefore nullifying whatever it was trying to do in the first place due to the fact that vbank(1) doesn't use the 0x03FF8 memory address like vbank(0) does (spoilers: it's for transparency).
-    -- Adding onto this, the cls() was incorrectly set, and wasn't clearing the screen after vbank(1), instead, clearing it after vbank(0), making the screen the color of vbank(1)'s palette, 
-    --which is undesirable. My fixes definitely are temporary as how it looks as of this moment is really strange, but I will organize in moments with comments :p.
-
-
-
-
-
-    -- Calls the draw function I created, it's done in the foreground after the clear screen of vbank(1), as to divide from the functions and important memory stuff.
-    draw()
-
-    -- Testing, draws the values of the temporary ship's position on screen: warning, uses fixed point numbers because it's goofy.
-    --print(p.x, 32, 32)
-    --print(p.y, 32, 40)
-    print("x: "..player.x, 20, 32)
-    print("y: "..player.y, 20, 40)
-    print("angle: "..player.angle,20,48)
-    print("T factor: "..player.turnfactor,20,56)
-    print("Vel: "..player.movespeed,20,64)
+    animation = {
+      idle = {self={384, 386, 388, 390}}
+    }
+    sprite = animation.idle.self[math.floor(t//10 % #animation.idle.self) + 1]
+    spr(sprite, player.x, player.y, 0, 1, boolToVal(player.flip), 0, 2, 2)
+  end
 
     -- Exit the current game to console with "`"
     if key(44) then
@@ -398,6 +517,14 @@ function gmouse()
 	return m
 end
 
+function boolToVal(bool)
+  if bool then
+    return 1
+  else
+    return 0
+  end
+end
+
 
 
 
@@ -410,46 +537,97 @@ end
 -- I hate that this is here (the <TILES> and whatever's below it).
 
 -- <TILES>
--- 001:4444444444444444a44aa44aa4aaa4aaaaaaaa2aa22aa2222222aa22aaa22a22
--- 002:6666655566665555666222556662225566622259666222596222555b6222555b
--- 003:55555666555555565555552622222226999999661199116611bb1166bbbbbb66
+-- 001:8888888888788778477447744744474444444424422442222222442244422422
+-- 002:2636636222222222ccccccccccccccccccccccccaccccccaaaaaaaaaaaaaaaaa
+-- 003:256225621111111123333333111111121aaaacaa133332221cccaaac11111122
 -- 004:0000000000059000000000000202505005029020000000000009500000000000
--- 016:5558855555888855555885555558855555588555555885555558855555588555
--- 017:2222aaaa2aa22a22aaaa222aaaa222aaa222a2aa22aaa22a2aaaaa222aaaaaa2
--- 018:622225556222bbb86666bbee66666bee66666111666661116666311166663330
--- 019:bbbbb66688886666448866664444bb664444ee66011166660133666600336666
--- 033:abaaaaaabaaaabaabaabaabababbaabbbbbbbbbbbbbbbbbbeeeeeeeeeeeeeeee
--- 034:0000000000000fff000eeeee00eeebbb00bbbbbb0eeeeeee0bbbbbbb022aaaab
--- 035:00000000fff00000eeeee000bbbeee00bbbbbb00eeeeeee0ebbbbbe0bb222bb0
--- 049:eeeeeeeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffff
--- 050:0aaaaa220bbbbbbb0eeeeeee00bbbbbb00bbbbbb000beeee00000fff00000000
--- 051:2223aaa0bbaaabb0ebbbbbe0eeeeee00bbbbbb00eeeeb000fff0000000000000
--- 096:0000055500005555000222550002225500022259000222590222555b0222555b
--- 097:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
--- 112:022225550222bbb80000bbee00000bee00000111000001110000311100003330
--- 113:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
--- 224:000000000000000000000000000000009999999999888999ded444d44d444ded
+-- 016:7778877777888877777887777778877777788777777887777778877777788777
+-- 017:2222444413312422113122213112221312221213222112212112112221323111
+-- 018:0000000000000000000000003233323312221222111111116162616211221122
+-- 019:2122221213133131213113122316a132231ca132213113121313313121222212
+-- 020:3332333320000002030320300012320000232100030230302000000233332333
+-- 032:11111111112112213223322332333233333333e33ee33eeeeeee33ee333ee3ee
+-- 033:2113112122212122112222113312221211121221222121212b2b2b211bb1bb1b
+-- 034:00000000000006660006666600666555005555550666666605555555044aaaa5
+-- 035:0000000066600000666660005556660055555500666666606555556055444550
+-- 036:0000000000000000000011110011111101111111011111111111111111111111
+-- 037:0000000000000000110000001111000011111000111110001111110011111100
+-- 048:000000000000000000000000000000007777777777888777aca444a44a444aca
+-- 049:b1bbb1bbbbbbbbbbabbbbbbaabbaabbaabaaaabaaaaaaaaaaaaaaaaaaaaaaaaa
+-- 050:0aaaaa4405555555066666660055555500555555000566660000066600000000
+-- 051:444caaa055aaa550655555606666660055555500666650006660000000000000
+-- 052:1111111111111111111111111111111101111111011111110011111100001111
+-- 053:1111110011111100111111001111110011111000111110001111000011000000
 -- </TILES>
 
 -- <SPRITES>
--- 000:0000055500005555000222550002225500022259000222590222555b0222555b
--- 001:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
--- 002:000000050000005f0000002c0000002c0c000326060023230300232502522325
--- 003:50000000f5000000c2000000c2000000623000c0323200605232003052322520
--- 004:0666666060000006600000066000000660000006600000066000000606666660
--- 016:022225550222bbb80000bbee00000bee00000111000001110000311100003330
--- 017:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
--- 018:05523322255231232522332002522300252220012552001f2033003c006c0003
--- 019:223325503213255202332252003225201002225261002552630033023000c600
+-- 002:0000000c000000cf000000ae000000ae000001af0f00a1ad0e00a1ac0dcaa1ac
+-- 003:c0000000fc000000ea000000ea000000fa100000da1a00f0ca1a00e0ca1aacd0
+-- 018:0cca11aaacca12a3acaa11a00acaa100acaaa001acca001fa0dd002e00fe0003
+-- 019:aa11acc03a21acca0a11aaca001aaca0100aaacad200accad300dd0a3000ef00
 -- 032:122244ddaa444ddd24444dd044488ddd244488d8aa4448d8122448d8112488dd
 -- 033:00dd88ddddd84ddd8d44d88d4844d8444448d844244884441444442412244232
--- 034:000000000000000c0000000f00000c00000000ff00c60000000f66660c00ffff
--- 035:00000000c0000000f000000000c00000ff00000000006c006666f000ffff00c0
+-- 034:000000000000000e0000000d00000e00000000dd00ef0000000dffff0e00dddd
+-- 035:00000000e0000000d000000000e00000dd0000000000fe00ffffd000dddd00e0
+-- 036:0700000087700000600000000600000060000000877000000700000000000000
+-- 037:0000007000000778000000060000006000000006000007780000007000000000
 -- 048:122a223312211233112111231121331331223333331211333111133131133331
 -- 049:1121432111111331121131313333311311331111111333331111333311113333
--- 050:fc600000ff6666660ffccccc000fffff00000000000000000000000000000000
--- 051:000006cf666666ffcccccff0fffff00000000000000000000000000000000000
+-- 050:def00000ddffffff0ddeeeee000ddddd00000000000000000000000000000000
+-- 051:00000fedffffffddeeeeedd0ddddd00000000000000000000000000000000000
+-- 052:0d000000edd00000f00000000f000000f0000000edd000000d00000000000000
+-- 053:000000d000000dde0000000f000000f00000000f00000dde000000d000000000
+-- 064:0000003300000333000033330002323000012100000212000001100000011000
+-- 065:0c044000a6c565500a5446504546646546566564046556400446644000044000
+-- 067:0100000021100000300000000300000030000000211000000100000000000000
+-- 068:0000001000000112000000030000003000000003000001120000001000000000
+-- 080:000000000effe00000000000ef00fe0000000000deeeed0000000000de00ed00
+-- 081:000000000efffe0000000000efff00000000000000eeed0000000000deeed000
+-- 082:0000000078888700000000000077c000000a6c000077a0000000000000770000
+-- 083:00000000efff000000000000ef00fe0000000000deee000000000000de00ed00
+-- 084:000000000ffff00000000000ef00fe0000000000de00ed00000000000eeee000
+-- 096:000005007777c65087888c000700000087700000070800000700000080000000
+-- 097:0000000087000000780000007800000078000000875000008c65780078c88700
+-- 099:000000007877000080087000807780007888000087785000780c65007808c000
+-- 100:00000000008700000878000007087000885780007c65870080c8870070007800
+-- 114:005000000c65700078c077007800870078007800780078008778870008877000
+-- 128:00000efe0000ceee000a6cee000eaeed00eeed5500ed156600ddd15600ddd746
+-- 129:fff00000efff0000eeee0000dddd000055500000666000006600000057000000
+-- 130:0000000000000efe0000ceee000a6cee000eaeed00eeed5500ed156600ddd156
+-- 131:00000000fff00000efff0000eeee0000dddd0000555000006660000066000000
+-- 132:0000000000000efe0000ceee000a6cee000eaeed00eeeede00ed155500ddd166
+-- 133:00000000fff00000efff0000eeee0000dddd0000eeee00005550000066600000
+-- 134:00000efe0000ceee000a6cee000eaeed00eeed5500ed156600ddd15600dd8746
+-- 135:fff00000efff0000eeee0000dddd000055500000666000006600000057000000
+-- 144:00dd877500d7887700d76578000765770000722300000560000044000000cb00
+-- 145:777000008778000088757000477570002338000005600000044000000cb00000
+-- 146:00ddd74600dd877500d8777700d788780007657700076523000074400000cb00
+-- 147:570000007770000087780000887800004775700023357000044800000cb00000
+-- 148:00ddd75600dd877500d7887700d765780007657700007223000004400000cb00
+-- 149:660000007770000087780000887570004775700023380000044000000cb00000
+-- 150:00d8877500d7887700d76578000765770000722300000560000044000000cb00
+-- 151:777800008778700088757000477570002338000005600000044000000cb00000
+-- 232:00000ccc0000cccc000aaacc000aaacc000aaac5000aaac50aaaccc60aaaccc6
+-- 233:ccccc000ccccccc0cccccca0aaaaaaa055555500115511001166110066666600
+-- 234:0000055500005555000222550002225500022259000222590222555b0222555b
+-- 235:55555000555555505555552022222220999999001199110011bb1100bbbbbb00
+-- 236:00000ccc0000cccc000aaacc000aaaca000aaac5000aaac50aaa54c50aaa54c5
+-- 237:ccaaa000ccccaaa0aaaaaaa0aaaaaaa055555500116611001166110066666600
+-- 238:00000ccc0000cccc000aaacc000aaacc000aaac5000aaac50aaaccc60aaaccc6
+-- 239:ccccc000ccccccc0cccccca0aaaaaaa055555500115511001166110066666600
+-- 248:0aaaaccc0aaa5558000055660000056600000222000002220000122200001110
+-- 249:6666600088880000778800007777550077776600022200000211000000110000
+-- 250:022225550222bbb80000bbee00000bee00000111000001110000311100003330
+-- 251:bbbbb00088880000448800004444bb004444ee00011100000133000000330000
+-- 252:0aaaaccc0aaa5558000055660000056600000222000005520000455200006440
+-- 253:6666600056580000748800007777550077776600055200000544000000460000
+-- 254:0aaaaccc0aaa5558000055660000056600000222000002220000122200001110
+-- 255:6666600088880000778800007777550077776600022200000211000000110000
 -- </SPRITES>
+
+-- <MAP>
+-- 016:202020202020202020202020202020202020202020202020202020202020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- </MAP>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
@@ -465,8 +643,12 @@ end
 -- 000:100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- </TRACKS>
 
+-- <FLAGS>
+-- 000:00000000000000000000000000000000000000000000000000000000000000000000000010100000000000000000000000000000101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- </FLAGS>
+
 -- <PALETTE>
--- 000:d1b187c77b58ae5d4079444a4b3d44ba91589274414d453977743bb3a555d2c9a58caba14b726e574852847875ab9b8e
--- 001:0000001f0e1c8331293e2137216c4bdc534b7664fed365c846af45e18d799a6348d6b97b9ec2e8a1d685e9d8a1f5f4eb
+-- 000:1f0e1c3e21375845638c8fae9a6348d79b7df5edba647d34c0c74170377f9d303be4943ad2647117434b34859d7ec4c1
+-- 001:1f0e1c3e21375845638c8fae9a6348d79b7df5edba647d34c0c74170377f9d303be4943ad2647117434b34859d7ec4c1
 -- </PALETTE>
 
