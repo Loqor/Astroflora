@@ -29,6 +29,12 @@ function BOOT()
     "first-level"
   }
 
+  mapcontent = {
+		entitylist = {
+			player,
+		},
+	}
+
   spaceship = {
     x=68,
     y=120,
@@ -55,6 +61,8 @@ function BOOT()
     flip = false,
 
     dogravity = true,
+    dotilecollide = {true, true, true},
+    colliding = false,
     vx = 0,
     vy = 0,
   }
@@ -251,33 +259,86 @@ function shipvelocity()
   if spaceship.turnfactor > 0.5 then spaceship.turnfactor = 0.5 end
 end
 
-function rectCollisions(spr, tile)
-  local is_colliding = false
-  if((spr.x+spr.w>=tile.x+tile.w) and (spr.x+spr.w<=tile.x+tile.w)) or ((spr.x-spr.w<=tile.x-tile.w) and (spr.x-spr.w>=tile.x-tile.w)) then
-    if((spr.y+spr.h>=tile.y+tile.h) and (spr.y+spr.w<=tile.y+tile.h)) or ((spr.y-spr.h<=tile.y-tile.h) and (spr.y-spr.h>=tile.y-tile.h)) then
-      is_colliding = true
-    end
-  end
+function collideTile()
+	for _, sp in pairs(mapcontent.entitylist) do
 
-  return is_colliding
+		sp.colliding = {false,false,false}
 
+		floor={nil}
+		roof={nil}
+		side={nil}
+		side2={nil}
+		if sp.dotilecollide[1] then floor = {solid(sp.x+2, sp.y+sp.vy+8), solid(sp.x+6, sp.y+sp.vy+8)}  end
+		if sp.dotilecollide[2] then roof = {solid(sp.x+2, sp.y+sp.vy), solid(sp.x+6, sp.y+sp.vy)} end
+		if sp.dotilecollide[3] then 
+			side = {solid(sp.x+sp.vx+1, sp.y+2), solid(sp.x+sp.vx+1, sp.y+6)}
+			side2 = {solid(sp.x + sp.vx+6, sp.y+2), solid(sp.x + sp.vx+6, sp.y+6)}
+		end
+		
+				--floor collision
+			if floor[1] or floor[2] then
+				
+				sp.vy = 0
+				if (solid(sp.x+2,sp.y+8) and solid(sp.x+6,sp.y+8)) and (sp.y+sp.vy+8) % 8 ~= 0 then
+					sp.y = sp.y - (sp.y+sp.vy+8) % 8
+				end
+				sp.colliding[1] = true
+			else --apply gravity
+				if sp.dogravity then
+					sp.vy = sp.vy+(sp.gravity)
+					sp.colliding[1] = false
+				end
+				
+			end
+		--roof collision
+		if roof[1] or roof[2] then
+			sp.vy = math.abs(sp.vy)
+			sp.colliding[2] = true
+		else
+			sp.colliding[2] = false
+		end
+		--side collision
+		if side[1] or side[2] or side2[1] or side2[2] then
+			sp.vx = 0
+			sp.colliding[3] = true
+		else
+			sp.colliding[3] = false
+		end
+	end
 end
 
 function playerVelocity()
 
-  if player.dogravity then
-    player.vy = player.vy+(gravity)
-  end
+  for _,sprite in pairs(mapcontent.entitylist) do
+		if math.abs(sprite.vy) > (4.5 ) then
+			if sprite.vy < 0 then sprite.vy = (-4.5 ) else sprite.vy = (4.5) end
+		end
 
-  if math.abs(player.vy) > (4.5) then
-    if player.vy < 0 then player.vy = (-4.5) else player.vy = (4.5) end
-  end
 
-  player.x = player.x + player.vx
+		sprite.x = sprite.x + (sprite.vx)
+		sprite.y = sprite.y + (sprite.vy)
 
-  player.vx = player.vx * 0.82
-  if math.abs(player.vx) < 0.05 then player.vx = 0 end
-  player.y = player.y + (player.vy)
+
+
+		sprite.vx = sprite.vx*(sprite.dx )
+		if math.abs(sprite.vx) < (0.05 ) then sprite.vx = 0 end
+	end
+	--for _,sprite in pairs(mapcontent.interactablelist) do
+	--	if sprite.canmove then
+	--		if math.abs(sprite.vy) > (4.5 ) then
+	--			if sprite.vy < 0 then sprite.vy = (-4.5 ) else sprite.vy = (4.5) end
+	--		end
+
+
+	--		sprite.x = sprite.x + (sprite.vx)
+	--		sprite.y = sprite.y + (sprite.vy)
+
+
+
+	--		sprite.vx = sprite.vx*(sprite.dx )
+	--		if math.abs(sprite.vx) < (0.05 ) then sprite.vx = 0 end
+	--	end
+	--end
 end
 
 function flyShipAndMove()
@@ -309,17 +370,21 @@ end
 function movePlayer()
 
   if btn(3) or key(04) then
-    player.vx = player.vx + player.movespeed * 2
+    if player.vx < player.maxspeed then
+      player.vx = player.vx + 0.3
+    end
     player.flip = false
   end
 
   if btn(2) or key(01) then
-    player.vx = player.vx - player.movespeed * 2
+    if player.vx < -player.maxspeed then
+      player.vx = player.vx - 0.3
+    end
     player.flip = true
   end
 
-  if btn(0) or key(23) then
-    player.vy = player.vy - player.y
+  if btn(0) or key(23) and player.colliding[1] then
+    player.vy = player.vy-0.3
   end
 end
 
@@ -338,6 +403,20 @@ function drawMainMenu()
   vbank(0)
   poke(0x3FC0, 1)
   cls(0)
+  for _,val in pairs(background) do
+    circ(table.unpack(val))
+  end
+  
+  for _,val in pairs(stars) do
+    local x = val[1] *2
+    local y = val[2] *2
+    if math.random(1,1000) > 1 then
+      line(x,y-1,x,y+1,6)
+      line(x-1,y,x+1,y,6)
+    else
+      pix(x,y,6)
+    end
+  end
 
   rspr(220,50,1,math.rad(45),2,16,2,2,0,false)
   rspr(208,62,1,math.rad(45),2,18,2,2,0,false)
@@ -516,6 +595,9 @@ function TIC()
     map(0,0,30,17)
 
     movePlayer()
+
+    collideTile()
+
     playerVelocity()
 
     animation = {
@@ -523,6 +605,8 @@ function TIC()
     }
     sprite = animation.idle.self[math.floor(t//10 % #animation.idle.self) + 1]
     spr(sprite, player.x, player.y, 0, 1, boolToVal(player.flip), 0, 2, 2)
+    
+    print("acceleration: "..player.vx, 4, 4, 6)
   end
 
     -- Exit the current game to console with "`"
@@ -668,7 +752,7 @@ end
 -- </TRACKS>
 
 -- <FLAGS>
--- 000:00000000000000000000000000000000000000000000000000000000000000000000000010100000000000000000000000000000101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 000:00101010000000000000000000000000001010101000000000000000000000001010000010100000000000000000000010100000101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- </FLAGS>
 
 -- <PALETTE>
