@@ -41,7 +41,7 @@ function BOOT()
     movespeed=0.2,
     maxspeed = 5,
     maxaccel = 1,
-    decelspeed = 0.995,
+    decelspeed = 0.98,
     turnfactor = 0.5,
 
     angle = 0,
@@ -249,14 +249,14 @@ function shipvelocity()
   spaceship.velocity = spaceship.velocity * spaceship.decelspeed
   spaceship.angularvelocity = spaceship.angularvelocity * 0.925
 
-
+  spaceship.turnfactor = 0.5
 
   --WIP easing shit, needs to be changed if can make better
   --no I won't explain :)
-  spaceship.turnfactor = 0.3 + (spaceship.velocity / 20)
-  spaceship.movespeed = math.abs((spaceship.velocity - 0.5) / (5 - 0.5) / 10)
-  if spaceship.movespeed > 0.1 then spaceship.movespeed = 0.1 end
-  if spaceship.turnfactor > 0.5 then spaceship.turnfactor = 0.5 elseif spaceship.turnfactor < 0 then spaceship.turnfactor = 0 end
+  spaceship.turnfactor = math.abs((spaceship.movespeed - 0.5) / (5 - 0.5)*3)
+  spaceship.movespeed = math.abs((spaceship.velocity - 0.5) / (5 - 0.5) / 6)
+  if spaceship.movespeed > 0.05 then spaceship.movespeed = 0.05 end
+  if spaceship.turnfactor > 0.5 then spaceship.turnfactor = 0.5 end
 
 end
 
@@ -384,7 +384,7 @@ function movePlayer()
     player.flip = true
   end
 
-  if btn(0) or key(23) and player.colliding[1] then
+  if btn(0) or key(23) and player.colliding then
     player.vy = player.vy-0.3
   end
 end
