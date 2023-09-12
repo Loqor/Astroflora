@@ -49,6 +49,11 @@ function BOOT()
     angularvelocity = 0,
   }
 
+  flipxy = {
+    fx = 0;
+    fy = 0;
+  }
+
   player = {
     x=0,
     y=128 - 16,
@@ -552,7 +557,11 @@ function drawSpace()
   spriy = 8
   angle = 0
 
-  rspr( spaceship.y+cam.ry,spaceship.x+cam.rx,1,math.rad(spaceship.angle),(sprix*2),spriy*2,2,2,0,false)
+  flipxy.fx = spaceship.y+cam.ry;
+  flipxy.fy = spaceship.x+cam.rx;
+
+  rspr(flipxy.fx,flipxy.fy,1,math.rad(spaceship.angle),(sprix*2),spriy*2,2,2,0,false)
+  spr(64,flipxy.fx,flipxy.fy,0, 1, 0, 0, 2, 2)
 
 
   -- Draws the sprite for the mouse cursor.
@@ -606,6 +615,7 @@ function TIC()
     }
     sprite = animation.idle.self[math.floor(t//10 % #animation.idle.self) + 1]
     spr(sprite, player.x, player.y, 0, 1, boolToVal(player.flip), 0, 2, 2)
+    
     
     print("acceleration: "..player.vx, 4, 4, 6)
   end
@@ -666,6 +676,10 @@ end
 -- 051:444caaa055aaa550655555606666660055555500666650006660000000000000
 -- 052:1111111111111111111111111111111101111111011111110011111100001111
 -- 053:1111110011111100111111001111110011111000111110001111000011000000
+-- 064:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+-- 065:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+-- 080:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+-- 081:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 -- </TILES>
 
 -- <SPRITES>
